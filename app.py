@@ -38,16 +38,23 @@ st.markdown('<div class="sub-title">위도와 경도를 입력하면 주변 지�
 # --- 입력 필드 ---
 col1, col2 = st.columns(2)
 with col1:
-    lat = st.number_input("위도 입력", value=37.50, step=0.01, format="%.2f")
+    lat_input = st.number_input("위도 입력", value=37.56, step=0.01, format="%.2f")
 with col2:
-    lon = st.number_input("경도 입력", value=127.00, step=0.01, format="%.2f")
+    lon_input = st.number_input("경도 입력", value=127.05, step=0.01, format="%.2f")
 
-# 분석 버튼
+# --- 버튼 클릭 이벤트 처리 ---
+# 버튼을 누르는 시점에만 입력된 위도/경도를 세션 상태에 고정합니다.
 if st.button("위험도 분석"):
     st.session_state['analyzed'] = True
+    st.session_state['target_lat'] = lat_input
+    st.session_state['target_lon'] = lon_input
 
 # --- 분석 결과 및 지도 시각화 ---
 if st.session_state.get('analyzed', False):
+    # 버튼 클릭 시점의 위도/경도 가져오기
+    lat = st.session_state['target_lat']
+    lon = st.session_state['target_lon']
+
     # 결과 메시지
     st.markdown('<div class="risk-high">예상 위험도: 높음 🔗</div>', unsafe_allow_html=True)
 
@@ -82,10 +89,10 @@ if st.session_state.get('analyzed', False):
         tooltip="분석 위치"
     ).add_to(m)
 
-    # 5. 지도 표시
-    st_folium(m, width=700, height=500)
+    # 5. 지도 표시 (값이 바뀔 때마다 동적으로 그려지도록 dynamic key 적용)
+    st_folium(m, width=700, height=500, key=f"map_{lat}_{lon}")
 
 else:
-    # 초기 지도 (데이터 없이 위치만 표시)
-    m = folium.Map(location=[37.50, 127.00], zoom_start=4)
-    st_folium(m, width=700, height=500)
+    # 초기 지도 (데이터 없이 기본 서울 위치 표시)
+    m = folium.Map(location=[37.56, 127.05], zoom_start=4)
+    st_folium(m, width=700, height=500, key="init_map")
